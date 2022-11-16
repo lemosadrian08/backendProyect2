@@ -10,9 +10,9 @@ class ProductsFirebaseDao extends FirebaseContainer {
 
 
   async save(item) {
-    const { title, description, code, img, price } = item
+    const { name, description, code, img, price } = item
 
-    if (!title || !description || !code || !img || !price) {
+    if (!name || !description || !code || !img || !price) {
       const message = 'Wrong body format: missing fields'
       throw new HttpError(HTTP_STATUS.BAD_REQUEST, message)
     }
@@ -24,9 +24,9 @@ class ProductsFirebaseDao extends FirebaseContainer {
   }
 
   async update(id, item) {
-    const { title, description, code, img, price } = item
+    const { name, description, code, img, price } = item
 
-    if (!title || !description || !code || !img || !price) {
+    if (!name || !description || !code || !img || !price) {
       const message = 'Wrong body format: missing fields'
       throw new HttpError(HTTP_STATUS.BAD_REQUEST, message)
     }

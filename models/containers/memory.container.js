@@ -21,7 +21,6 @@ class MemoryContainer {
   async getById(id){
     const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
     const jsonContent = JSON.parse(content);
-    console.log(jsonContent);
     const item = jsonContent.find(element=>element.id===id)
     if(!item){
         const message = `The object with id ${id} does not exist in our records`;
