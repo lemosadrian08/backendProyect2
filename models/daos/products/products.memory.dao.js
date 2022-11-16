@@ -2,13 +2,12 @@ const MemoryContainer = require("../../containers/memory.container");
 
 
 
-const fileRoute = '../../../DB/data/products.json' 
+
 const collection = "memory";
 class ProductsMemoryDao extends MemoryContainer {
-  constructor() {
-    super(collection, fileRoute);
-  }
-
+    constructor() {
+    super("/DB/data/products.json");
+  } 
 }
 
 

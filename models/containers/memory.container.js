@@ -1,161 +1,85 @@
-/* const { v4: uuid } = require("uuid");
+const { v4: uuid } = require("uuid");
 const { HTTP_STATUS } = require("../../constants/api.constants");
-const { HttpError } = require("../../utils/api.utils"); */
+const { HttpError } = require("../../utils/api.utils");
+const fs = require('fs');
+
 
 
 class MemoryContainer {
-  constructor(collection, fileRoute) {
-    this.name = fileRoute
-    /* this.items = [];
-    this.resource = resource; */
+  constructor(fileRoute) {
+    this.fileRoute = fileRoute
+    this.items = [];
+
   }
 
-  async save(newProduct){
-    try{
-        const content = await fs.promises.readFile(`./${this.name}`,'utf-8');
-        const jsonContent = JSON.parse(content);
-        let max = 0
-        jsonContent.forEach(element => {
-            if(element.id > max){
-                max = element.id
-            }
-        })
-        const newId = max+1
-        const { name, description, code, price, img, timestamp } =newProduct
-        const newModifiedProduct = {
-            name,
-            description,
-            code,
-            price,
-            img,
-            timestamp: Date.now(),
-            id: newId
-        }
-        jsonContent.push(newModifiedProduct)
-        await fs.promises.writeFile(`./${this.name}`, JSON.stringify(jsonContent, null, 2))
-        return newModifiedProduct
-    }
-    catch(error){
-        console.log(error.message);
-    }
-}
-async getAll(){
-    try{
-        const content = await fs.promises.readFile(`./${this.name}`,'utf-8');
-        const jsonContent = JSON.parse(content);
-        return jsonContent
-    }
-    catch(error){
-        console.log(error.message);
-    }
-}
-async getById(id){
-    try{
-        const content = await fs.promises.readFile(`./${this.name}`,'utf-8');
-        const jsonContent = JSON.parse(content);
-        const filteredContent = jsonContent.filter(element=>element.id===+id)
-        if(filteredContent<0){
-            return{error: `Product with id:${id} does not exist`}
-        }else{
-            return filteredContent
-        }
-    }
-    catch(error){
-        console.log(error.message);
-    }
-}
-async deleteById(id){
-    try{
-        const content = await fs.promises.readFile(`./${this.name}`,'utf-8');
-        const jsonContent = JSON.parse(content);
-        const indexProduct= jsonContent.findIndex(element=>element.id===+id)
-        if(indexProduct<0){
-            return{error: `Product with id:${id} does not exist`}
-        }else{
-            jsonContent.splice(indexProduct,1)
-            await fs.promises.writeFile(`./${this.name}`, JSON.stringify(jsonContent, null, 2))
-            return `The product with id ${id} has been deleted`
-        }
-    }
-    catch(error){
-        console.log(error.message);
-    }
-}
-async update(id, productToUpdate){
-    try{
-        const { name, description, code, price, img, timestamp } = productToUpdate;
-        if( !name || !description || !code || !price || !img || !timestamp ) {
-            return {error: "Wrong body format"}
-        }
-        const content = await fs.promises.readFile(`./${this.name}`,'utf-8');
-        const jsonContent = JSON.parse(content);
-        const indexProduct= jsonContent.findIndex(element=>element.id===+id)
-        if(indexProduct<0){
-            return{error: `Product with id:${id} does not exist`}
-        }
-        const updatedProduct = {
-            ...jsonContent[indexProduct],
-            name,
-            description,
-            code,
-            price,
-            img,
-            timestamp: Date.now()
-        }
-        jsonContent[indexProduct] = updatedProduct
-        await fs.promises.writeFile(`./${this.name}`, JSON.stringify(jsonContent, null, 2))
-        return updatedProduct
-    }
-    catch(error){
-        console.log(error.message);
-    }
-}
-
-
-
-
-
-/* 
-  getById(id) {
-    const item = this.items.find(item => item.id === id);
-    if (!item) {
-      const message = `${this.resource} with id ${id} does not exist in our records`;
-      throw new HttpError(HTTP_STATUS.NOT_FOUND, message);
-    }
-    return item;
+  async getAll(){
+    const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
+    const jsonContent = JSON.parse(content);
+    return jsonContent
   }
 
-  save(item) {
+  async getById(id){
+    const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
+    const jsonContent = JSON.parse(content);
+    console.log(jsonContent);
+    const item = jsonContent.find(element=>element.id===id)
+    if(!item){
+        const message = `The object with id ${id} does not exist in our records`;
+        throw new HttpError(HTTP_STATUS.NOT_FOUND, message);
+    }
+    return item
+  }
+
+  async save(item){
+    const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
+    const jsonContent = JSON.parse(content);
     const newItem = {
       id: uuid(),
+      timestamp: Date.now(),
       ...item
     };
-    this.items.push(newItem);
-    return newItem;
+    jsonContent.push(newItem)
+    await fs.promises.writeFile(`./${this.fileRoute}`, JSON.stringify(jsonContent, null, 2))
+    return  newItem
+
   }
 
-  update(id, item) {
-    const index = this.items.findIndex(item => item.id === id);
-    if (index < 0) {
-      const message = `${this.resource} with id ${id} does not exist in our records`;
+  async update(id, productToUpdate){
+    const { name, description, code, price, img } = productToUpdate;
+    if( !name || !description || !code || !price || !img ) {
+      const message = `Wrong body format`;
+      throw new HttpError(HTTP_STATUS.FORBIDDEN, message);
+    }
+    const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
+    const jsonContent = JSON.parse(content);
+    const indexProduct= jsonContent.findIndex(element=>element.id===id)
+    if(indexProduct<0){
+      const message = `The object with id ${id} does not exist in our records`;
       throw new HttpError(HTTP_STATUS.NOT_FOUND, message);
     }
-    const updatedItem = {
-      id,
-      ...item
-    };
-    this.items[index] = updatedItem;
-    return updatedItem;
+    const updatedProduct = {
+        id,
+        timestamp: Date.now(),
+        ...productToUpdate
+    }
+    jsonContent[indexProduct] = updatedProduct
+    await fs.promises.writeFile(`./${this.fileRoute}`, JSON.stringify(jsonContent, null, 2))
+    return updatedProduct
   }
 
-  delete(id) {
-    const index = this.items.findIndex(item => item.id === id);
-    if (index < 0) {
-      const message = `${this.resource} with id ${id} does not exist in our records`;
+  async delete(id){
+    const content = await fs.promises.readFile(`./${this.fileRoute}`,'utf-8');
+    const jsonContent = JSON.parse(content);
+    const indexProduct= jsonContent.findIndex(element=>element.id===id)
+    if(indexProduct<0){
+      const message = `The object with id ${id} does not exist in our records`;
       throw new HttpError(HTTP_STATUS.NOT_FOUND, message);
     }
-    return this.items.splice(index, 1);
-  } */
-} 
+    jsonContent.splice(indexProduct,1)
+    await fs.promises.writeFile(`./${this.fileRoute}`, JSON.stringify(jsonContent, null, 2))
+    return `The object with id ${id} has been deleted`
+}
+
+}
 
 module.exports = MemoryContainer;

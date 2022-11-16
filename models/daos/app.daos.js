@@ -17,9 +17,8 @@ switch(envConfig.DATASOURCE) {
     break
   case 'memory':
     ProductsDao = require('./products/products.memory.dao')
-    
-/*     UsersDao = require('./users/users.memory.dao');
-    CartsDao = require('./carts/carts.memory.dao') */
+    UsersDao = require('./users/users.memory.dao');
+    CartsDao = require('./carts/carts.memory.dao')
     break
   default:
     throw new Error("Invalid Datasou,rce");
